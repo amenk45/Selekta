@@ -132,7 +132,10 @@
 
 <div class="header">
   <div class="logo">Selek<span>Ta</span></div>
-  <div class="header-tag">Recruitment Assessment</div>
+  <div style="display:flex;gap:12px;align-items:center">
+    <button onclick="fillTestMode()" style="font-family:'DM Sans',sans-serif;font-size:0.72rem;font-weight:600;padding:6px 14px;border-radius:6px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:var(--cream);cursor:pointer;letter-spacing:0.06em" title="Isi semua jawaban otomatis untuk testing">⚡ TEST MODE</button>
+    <div class="header-tag">Recruitment Assessment</div>
+  </div>
 </div>
 <div class="progress-wrap">
   <div class="progress-steps" id="progressSteps"></div>
@@ -624,7 +627,7 @@ const EQ_Q = [
 //  STATE & CONFIG
 // ════════════════════════════════════════════════════
 const PAGE_SIZE = 5;
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-xnLt_QfiKVyU-K00U7mIxa8Pkbi1rGmMy7L5Jq1mC12LniIFrVdki3goSXANvFyY/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwB9IFtmh8mF0aTnmaMvfPKjfkOCyPH5KPT2qoWKQLTOuieeqKalJZWyvvB3CKhJXld/exec';
 
 let candidateData = {};
 const answers = { disc:{}, papi:{}, mbti:{}, eq:{} };
@@ -756,12 +759,11 @@ function renderDiscPage(container, slice) {
 }
 
 function setDiscAnswer(qid, type, val, blockId) {
+  val = parseInt(val);
   if(!answers.disc[qid]) answers.disc[qid] = {};
-  // Prevent same option for paling and kurang
   const other = type==='paling'?'kurang':'paling';
   if(answers.disc[qid][other] === val) {
     showToast('⚠ Pilihan PALING dan KURANG tidak boleh sama');
-    // uncheck
     document.querySelectorAll(`input[name="${qid}-${type}"]`).forEach(r=>r.checked=false);
     return;
   }
@@ -1005,6 +1007,44 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// ════════════════════════════════════════════════════
+//  TEST MODE — auto-fill semua jawaban
+// ════════════════════════════════════════════════════
+function fillTestMode() {
+  // Fill data diri
+  document.getElementById('f-nama').value = 'Test Kandidat';
+  document.getElementById('f-gender').value = 'Laki-laki';
+  document.getElementById('f-usia').value = '25';
+  document.getElementById('f-tgl').value = new Date().toISOString().split('T')[0];
+  document.getElementById('f-hp').value = '081234567890';
+  document.getElementById('f-email').value = 'test@selekta.id';
+  document.getElementById('f-posisi').value = 'Test Position';
+
+  // Fill DISC — pilih paling=0, kurang=2 untuk semua
+  for(const q of DISC_Q) {
+    answers.disc[q.id] = { paling: 0, kurang: 2 };
+  }
+
+  // Fill PAPI — pilih 'a' untuk semua
+  for(const q of PAPI_Q) {
+    if(q.isValidation) { answers.papi[q.id] = 'b'; continue; } // jawab benar soal jebakan
+    answers.papi[q.id] = 'a';
+  }
+
+  // Fill MBTI — pilih 'a' untuk semua
+  for(const q of MBTI_Q) {
+    if(q.isValidation) { answers.mbti[q.id] = 'a'; continue; }
+    answers.mbti[q.id] = 'a';
+  }
+
+  // Fill EQ — pilih opsi index 2 (skor tinggi) untuk semua
+  for(const q of EQ_Q) {
+    answers.eq[q.id] = 2;
+  }
+
+  showToast('⚡ Test mode aktif — semua jawaban terisi!');
 }
 
 // INIT
