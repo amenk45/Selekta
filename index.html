@@ -142,78 +142,11 @@ input:focus, select:focus { border-color: var(--accent); }
     <div class="btn-row"><div></div><button class="btn btn-primary" onclick="startTest()">Mulai Tes →</button></div>
   </div>
 
-  <!-- SCREEN 1: DISC -->
-  <div class="screen" id="screen-1">
-    <div class="mod-intro">
-      <div class="section-label">Modul 1 dari 4</div>
-      <h2 class="section-title">DISC</h2>
-      <p class="section-desc">Untuk setiap kelompok, pilih 1 kata yang <strong style="color:var(--accent)">PALING</strong> dan 1 kata yang <strong style="color:var(--accent)">KURANG</strong> menggambarkan Anda.</p>
-      <div class="mod-meta">
-        <div class="meta-item"><strong>24</strong>Kelompok</div>
-        <div class="meta-item"><strong>~15 mnt</strong>Estimasi</div>
-      </div>
-    </div>
-    <div id="disc-q"></div>
-    <div class="btn-row">
-      <button class="btn btn-ghost" id="disc-prev" onclick="qPrev('disc')">← Kembali</button>
-      <button class="btn btn-primary" id="disc-next" onclick="qNext('disc')">Lanjut →</button>
-    </div>
-  </div>
-
-  <!-- SCREEN 2: PAPI -->
-  <div class="screen" id="screen-2">
-    <div class="mod-intro">
-      <div class="section-label">Modul 2 dari 4</div>
-      <h2 class="section-title">PAPI Kostick</h2>
-      <p class="section-desc">Pilih satu pernyataan yang <strong style="color:var(--accent)">paling menggambarkan</strong> diri Anda dari setiap pasang.</p>
-      <div class="mod-meta">
-        <div class="meta-item"><strong>90</strong>Pasang</div>
-        <div class="meta-item"><strong>~25 mnt</strong>Estimasi</div>
-      </div>
-    </div>
-    <div id="papi-q"></div>
-    <div class="btn-row">
-      <button class="btn btn-ghost" id="papi-prev" onclick="qPrev('papi')">← Kembali</button>
-      <button class="btn btn-primary" id="papi-next" onclick="qNext('papi')">Lanjut →</button>
-    </div>
-  </div>
-
-  <!-- SCREEN 3: MBTI -->
-  <div class="screen" id="screen-3">
-    <div class="mod-intro">
-      <div class="section-label">Modul 3 dari 4</div>
-      <h2 class="section-title">MBTI</h2>
-      <p class="section-desc">Pilih pernyataan yang <strong style="color:var(--accent)">lebih sesuai</strong> dengan diri Anda dari setiap pasang.</p>
-      <div class="mod-meta">
-        <div class="meta-item"><strong>60</strong>Pasang</div>
-        <div class="meta-item"><strong>~20 mnt</strong>Estimasi</div>
-      </div>
-    </div>
-    <div id="mbti-q"></div>
-    <div class="btn-row">
-      <button class="btn btn-ghost" id="mbti-prev" onclick="qPrev('mbti')">← Kembali</button>
-      <button class="btn btn-primary" id="mbti-next" onclick="qNext('mbti')">Lanjut →</button>
-    </div>
-  </div>
-
-  <!-- SCREEN 4: EQ -->
-  <div class="screen" id="screen-4">
-    <div class="mod-intro">
-      <div class="section-label">Modul 4 dari 4</div>
-      <h2 class="section-title">Kecerdasan Emosional</h2>
-      <p class="section-desc">Pilih yang paling menggambarkan apa yang <strong style="color:var(--accent)">biasanya Anda lakukan</strong>.</p>
-      <div class="mod-meta">
-        <div class="meta-item"><strong>25</strong>Skenario</div>
-        <div class="meta-item"><strong>~15 mnt</strong>Estimasi</div>
-      </div>
-    </div>
-    <div class="eq-note"><strong>Referensi:</strong> Dikembangkan berdasarkan kerangka teori Daniel Goleman (1995, 1998) — 5 dimensi: Self-Awareness, Self-Regulation, Motivation, Empathy, Social Skills.</div>
-    <div id="eq-q"></div>
-    <div class="btn-row">
-      <button class="btn btn-ghost" id="eq-prev" onclick="qPrev('eq')">← Kembali</button>
-      <button class="btn btn-primary" id="eq-next" onclick="qNext('eq')">Lanjut →</button>
-    </div>
-  </div>
+  <!-- SCREENS 1-4: rendered by JS -->
+  <div class="screen" id="screen-1"><div id="disc-wrap"></div></div>
+  <div class="screen" id="screen-2"><div id="papi-wrap"></div></div>
+  <div class="screen" id="screen-3"><div id="mbti-wrap"></div></div>
+  <div class="screen" id="screen-4"><div id="eq-wrap"></div></div>
 
   <!-- SCREEN 5: DONE -->
   <div class="screen" id="screen-5">
@@ -508,47 +441,63 @@ function startTest() {
 function renderQ(mod) {
   const qs = {disc:DISC_Q, papi:PAPI_Q, mbti:MBTI_Q, eq:EQ_Q}[mod];
   const q = qs[qIdx[mod]];
-  const container = document.getElementById(mod + '-q');
+  const wrap = document.getElementById(mod + '-wrap');
   const globalNum = qIdx[mod] + 1;
   const total = qs.length;
-
-  updateProgress();
-
-  // Update prev/next buttons
-  const prevBtn = document.getElementById(mod + '-prev');
-  const nextBtn = document.getElementById(mod + '-next');
-  prevBtn.style.visibility = (qIdx[mod] === 0) ? 'hidden' : 'visible';
-
+  const isFirst = qIdx[mod] === 0;
   const isLastQ = qIdx[mod] === total - 1;
   const nextMods = {disc:'papi', papi:'mbti', mbti:'eq', eq:null};
   const nextModLabel = {disc:'PAPI Kostick', papi:'MBTI', mbti:'EQ', eq:null};
+  const modTitles = {disc:'DISC', papi:'PAPI Kostick', mbti:'MBTI', eq:'Kecerdasan Emosional'};
+  const modNums = {disc:'1', papi:'2', mbti:'3', eq:'4'};
+  const modDescs = {
+    disc:'Untuk setiap kelompok, pilih 1 kata yang <strong style="color:var(--accent)">PALING</strong> dan 1 kata yang <strong style="color(--accent)">KURANG</strong> menggambarkan Anda.',
+    papi:'Pilih satu pernyataan yang <strong style="color:var(--accent)">paling menggambarkan</strong> diri Anda dari setiap pasang.',
+    mbti:'Pilih pernyataan yang <strong style="color:var(--accent)">lebih sesuai</strong> dengan diri Anda.',
+    eq:'Pilih yang paling menggambarkan apa yang <strong style="color:var(--accent)">biasanya Anda lakukan</strong>.'
+  };
 
-  if(isLastQ && !nextMods[mod]) {
-    nextBtn.textContent = 'Submit Tes ✓';
-    nextBtn.onclick = submitAll;
-  } else if(isLastQ) {
-    nextBtn.textContent = 'Lanjut ke ' + nextModLabel[mod] + ' →';
-    nextBtn.onclick = () => qNext(mod);
-  } else {
-    nextBtn.textContent = 'Lanjut →';
-    nextBtn.onclick = () => qNext(mod);
-  }
+  updateProgress();
 
-  if(mod === 'disc') {
-    renderDiscQ(container, q, globalNum, total);
-  } else if(mod === 'papi' || mod === 'mbti') {
-    renderFCQ(container, q, mod, globalNum, total);
-  } else {
-    renderEQQ(container, q, globalNum, total);
-  }
+  // Build question HTML
+  let qHTML = '';
+  if(mod === 'disc') qHTML = buildDiscQ(q, globalNum, total);
+  else if(mod === 'papi' || mod === 'mbti') qHTML = buildFCQ(q, mod, globalNum, total);
+  else qHTML = buildEQQ(q, globalNum, total);
 
-  const modLabel = {disc:'DISC', papi:'PAPI Kostick', mbti:'MBTI', eq:'EQ'}[mod];
+  // Inject intro only on first question, then just the question
+  const introHTML = isFirst ? `
+    <div class="mod-intro" style="margin-bottom:24px">
+      <div class="section-label">Modul ${modNums[mod]} dari 4</div>
+      <h2 class="section-title">${modTitles[mod]}</h2>
+      <p class="section-desc">${modDescs[mod]}</p>
+      <div class="mod-meta">
+        <div class="meta-item"><strong>${total}</strong>Soal</div>
+      </div>
+    </div>` : '';
+
+  const eqNote = (mod === 'eq' && isFirst) ? `<div class="eq-note"><strong>Referensi:</strong> Dikembangkan berdasarkan kerangka teori Daniel Goleman (1995, 1998) — Self-Awareness, Self-Regulation, Motivation, Empathy, Social Skills.</div>` : '';
+
+  const btnLabel = isLastQ && !nextMods[mod] ? 'Submit Tes ✓' :
+    isLastQ ? 'Lanjut ke ' + nextModLabel[mod] + ' →' : 'Lanjut →';
+
+  wrap.innerHTML = `
+    ${introHTML}
+    ${eqNote}
+    ${qHTML}
+    <div class="btn-row" style="margin-top:20px">
+      <button class="btn btn-ghost" style="visibility:${isFirst?'hidden':'visible'}" onclick="qPrev('${mod}')">← Kembali</button>
+      <button class="btn btn-primary" onclick="${isLastQ && !nextMods[mod] ? 'submitAll()' : "qNext('"+mod+"')"}">${btnLabel}</button>
+    </div>`;
+
+  const modLabel = modTitles[mod];
   setProgLabel(modLabel + ' — Soal ' + globalNum + ' dari ' + total);
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
-function renderDiscQ(container, q, num, total) {
+function buildDiscQ(q, num, total) {
   const ans = answers.disc[q.id] || {};
-  container.innerHTML = `
+  return `
     <div class="q-wrap">
       <div class="q-counter">Kelompok ${num} / ${total}</div>
       <div class="q-sub">Pilih 1 PALING dan 1 KURANG menggambarkan Anda:</div>
@@ -584,9 +533,9 @@ function setDiscQ(qid, val, type) {
   }
 }
 
-function renderFCQ(container, q, mod, num, total) {
+function buildFCQ(q, mod, num, total) {
   const ans = answers[mod][q.id];
-  container.innerHTML = `
+  return `
     <div class="q-wrap">
       <div class="q-counter">Pasang ${num} / ${total}</div>
       <div class="q-text">Pilih yang lebih sesuai dengan diri Anda:</div>
@@ -605,10 +554,10 @@ function setFCQ(mod, qid, val, el) {
   setTimeout(() => qNext(mod), 350);
 }
 
-function renderEQQ(container, q, num, total) {
+function buildEQQ(q, num, total) {
   const ans = answers.eq[q.id];
   const dimLabel = {SA:'Self-Awareness',SR:'Self-Regulation',MO:'Motivasi',EM:'Empati',SS:'Social Skills'}[q.dim];
-  container.innerHTML = `
+  return `
     <div class="q-wrap">
       <div class="q-counter">Skenario ${num} / ${total} &nbsp;·&nbsp; <span style="color:var(--accent)">${dimLabel}</span></div>
       <div class="q-text">${q.text}</div>
@@ -661,9 +610,7 @@ function qNext(mod) {
     if(next) {
       qIdx[next] = 0;
       renderQ(next);
-      goTo(nextScreens[mod] - 1 + 1);
-      // screen numbering: disc=1,papi=2,mbti=3,eq=4
-      const screens = {disc:1,papi:2,mbti:3,eq:4};
+      const screens = {papi:2,mbti:3,eq:4};
       goTo(screens[next]);
     } else {
       submitAll();
@@ -812,4 +759,3 @@ function showToast(msg) {
 </script>
 </body>
 </html>
-
